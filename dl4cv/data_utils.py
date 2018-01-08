@@ -9,47 +9,14 @@ import torch
 import torch.utils.data as data
 from torchvision import transforms
 
+root = "../PlantVillage_Dataset/raw"
+target = "../partitioned_dataset"
 
-
-diseases_list = [{"id": 0,  "name": "Apple Scab"},
-                 {"id": 1,  "name": "Apple Black Rot"},
-                 {"id": 2,  "name": "Apple Cedar Rust"},
-                 {"id": 3,  "name": "Apple Healthy"},
-                 {"id": 4,  "name": "Blueberry Healthy"},
-                 {"id": 5,  "name": "Cherry Healthy"},
-                 {"id": 6,  "name": "Cherry Powdery Mildew"},
-                 {"id": 7,  "name": "Corn Gray Leaf Spot"},
-                 {"id": 8,  "name": "Corn Common Rust"},
-                 {"id": 9,  "name": "Corn Healthy"},
-                 {"id": 10, "name": "Corn Northern Leaf Blight"},
-                 {"id": 11, "name": "Grape Black Rot"},
-                 {"id": 12, "name": "Grape Black Measles"},
-                 {"id": 13, "name": "Grape Healthy"},
-                 {"id": 14, "name": "Grape Leaf Blight"},
-                 {"id": 15, "name": "Orange Huanglongbing"},
-                 {"id": 16, "name": "Peach Bacterial Spot"},
-                 {"id": 17, "name": "Peach Healthy"},
-                 {"id": 18, "name": "Bell Pepper Bacterial Spot"},
-                 {"id": 19, "name": "Bell Pepper Healthy"},
-                 {"id": 20, "name": "Potato Early Blight"},
-                 {"id": 21, "name": "Potato Healthy"},
-                 {"id": 22, "name": "Potato Late Blight"},
-                 {"id": 23, "name": "Raspberry Healthy"},
-                 {"id": 24, "name": "Soybean Healthy"},
-                 {"id": 25, "name": "Squash Powdery Mildew"},
-                 {"id": 26, "name": "Strawberry Healthy"},
-                 {"id": 27, "name": "Strawberry Leaf Scorch"},
-                 {"id": 28, "name": "Tomato Bacterial Spot"},
-                 {"id": 29, "name": "Tomato Early Blight"},
-                 {"id": 30, "name": "Tomato Late Blight"},
-                 {"id": 31, "name": "Tomato Leaf Mold"},
-                 {"id": 32, "name": "Tomato Septoria Leaf Spot"},
-                 {"id": 33, "name": "Tomato two Spotted Spider Mite"},
-                 {"id": 34, "name": "Tomato Target Spot"},
-                 {"id": 35, "name": "Tomato Mosaic Virus"},
-                 {"id": 36, "name": "Tomato Yellow Leaf Curl Virus"},
-                 {"id": 37, "name": "Tomato Healthy"}]
-
+plant_type = "Plant_type_set"
+disease_type = "Disease_type_set"
+train_set = "Training_set"
+val_set = "Validation_set"
+test_set = "Test_set"
 
 class ClassificationData(data.Dataset):
 
@@ -62,6 +29,14 @@ class ClassificationData(data.Dataset):
             transforms.Scale(240),
             transforms.ToTensor(),
         ])
+
+        pickle_in = open(os.path.join(target, "segmented/plant_type_dict.pickle"), "rb")
+        plant_type_dict = pickle.load(pickle_in)
+        pickle_in.close()
+
+        pickle_in = open(os.path.join(target, "segmented/segmented_type_dict.pickle"), "rb")
+        disease_type_dict = pickle.load(pickle_in)
+        pickle_in.close()
 
         with open(os.path.join(self.root, image_list)) as f:
             self.image_names = f.read().splitlines()

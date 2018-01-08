@@ -1,6 +1,7 @@
 import glob, os
 import shutil
 import numpy as np
+import cPickle as pickle
 
 root = "../PlantVillage_Dataset/raw"
 target = "../partitioned_dataset"
@@ -130,6 +131,29 @@ def create_dataset(root, f_name):
 			print "error in " + plant_name
 
 
+	plant_type_dict = {}
+	disease_type_dict = {}
+
+	with open(plant_type_txt, "r") as f:
+		for line in f:
+			key, value = line.strip().split("=")
+			plant_type_dict[key] = value
+
+	with open(disease_type_txt, "r") as f:
+		for line in f:
+			key, value = line.strip().split("=")
+			disease_type_dict[key] = value
+
+	print plant_type_dict, disease_type_dict
+	pickle_path = os.path.join(target_dir, "plant_type_dict.pickle")
+	pickle_out = open(pickle_path, "wb")
+	pickle.dump(plant_type_dict, pickle_out)
+	pickle_out.close()
+
+	pickle_path = os.path.join(target_dir, "disease_type_dict.pickle")
+	pickle_out = open(pickle_path, "wb")
+	pickle.dump(disease_type_dict, pickle_out)
+	pickle_out.close()
 
 	"""
 	for i in range(0,38):
