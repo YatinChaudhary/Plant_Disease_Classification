@@ -4,7 +4,10 @@ import numpy as np
 import cPickle as pickle
 
 root = "../PlantVillage_Dataset/raw"
-target = "../partitioned_dataset"
+#target = "../partitioned_dataset"
+
+### FOR DEVELOPMENT DATASET
+target = "../partitioned_dataset_dev"
 
 if not os.path.exists(target):
 	os.makedirs(target)
@@ -101,8 +104,13 @@ def create_dataset(root, f_name):
 		files_current_dir = os.walk(current_dir).next()[2]
 		files_count_current_dir = len(files_current_dir)
 		
-		val_set_files_count = files_count_current_dir // 5
-		test_set_files_count = files_count_current_dir // 5
+		#val_set_files_count = files_count_current_dir // 5
+		#test_set_files_count = files_count_current_dir // 5
+		#train_set_files_count = files_count_current_dir - (val_set_files_count + test_set_files_count)
+
+		### FOR DEVELOPMENT DATASET
+		val_set_files_count = files_count_current_dir // 20
+		test_set_files_count = files_count_current_dir // 80
 		train_set_files_count = files_count_current_dir - (val_set_files_count + test_set_files_count)
 		
 		index_array = np.arange(files_count_current_dir)
@@ -120,7 +128,7 @@ def create_dataset(root, f_name):
 					file_name_plant = str(plant_name_id) + '_' + str(plant_counter_val)
 					file_path = os.path.join(current_dir, files_current_dir[index])
 					#if not os.path.exists(os.path.join(val_plant_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, os.path.join(val_plant_type_set_path, file_name_plant))
+					shutil.copy2(file_path, os.path.join(val_plant_type_set_path, file_name_plant + '.jpg'))
 					f.write(file_name_plant + "\n")
 					plant_counter_val += 1
 
@@ -131,7 +139,7 @@ def create_dataset(root, f_name):
 					file_name_disease = str(disease_name_id) + '_' + str(disease_counter_val)
 					file_path = os.path.join(current_dir, files_current_dir[index])
 					#if not os.path.exists(os.path.join(val_disease_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, os.path.join(val_disease_type_set_path, file_name_disease))
+					shutil.copy2(file_path, os.path.join(val_disease_type_set_path, file_name_disease + '.jpg'))
 					f.write(file_name_disease + "\n")
 					disease_counter_val += 1
 
@@ -141,7 +149,7 @@ def create_dataset(root, f_name):
 					file_name_plant = str(plant_name_id) + '_' + str(plant_counter_test)
 					file_path = os.path.join(current_dir, files_current_dir[index])
 					#if not os.path.exists(os.path.join(val_plant_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, os.path.join(test_plant_type_set_path, file_name_plant))
+					shutil.copy2(file_path, os.path.join(test_plant_type_set_path, file_name_plant + '.jpg'))
 					f.write(file_name_plant + "\n")
 					plant_counter_test += 1
 
@@ -150,16 +158,18 @@ def create_dataset(root, f_name):
 					file_name_disease = str(disease_name_id) + '_' + str(disease_counter_test)
 					file_path = os.path.join(current_dir, files_current_dir[index])
 					#if not os.path.exists(os.path.join(val_disease_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, os.path.join(test_disease_type_set_path, file_name_disease))
+					shutil.copy2(file_path, os.path.join(test_disease_type_set_path, file_name_disease + '.jpg'))
 					f.write(file_name_disease + "\n")
 					disease_counter_test += 1
-
+			
+			### COMMENT BELOW TWO FOR LOOPS FOR DEVELOPMENT DATASET
+			"""
 			with open(os.path.join(plant_type_set_path, train_set + ".txt"), "a") as f:
 				for index in train_set_file_indices:
 					file_name_plant = str(plant_name_id) + '_' + str(plant_counter_train)
 					file_path = os.path.join(current_dir, files_current_dir[index])
 					#if not os.path.exists(os.path.join(val_plant_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, os.path.join(train_plant_type_set_path, file_name_plant))
+					shutil.copy2(file_path, os.path.join(train_plant_type_set_path, file_name_plant + '.jpg'))
 					f.write(file_name_plant + "\n")
 					plant_counter_train += 1
 
@@ -168,10 +178,10 @@ def create_dataset(root, f_name):
 					file_name_disease = str(disease_name_id) + '_' + str(disease_counter_train)
 					file_path = os.path.join(current_dir, files_current_dir[index])
 					#if not os.path.exists(os.path.join(val_disease_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, os.path.join(train_disease_type_set_path, file_name_disease))
+					shutil.copy2(file_path, os.path.join(train_disease_type_set_path, file_name_disease + '.jpg'))
 					f.write(file_name_plant + "\n")
 					disease_counter_train += 1
-					
+			"""
 		except Exception:
 			print "error in " + plant_name
 

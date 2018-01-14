@@ -6,23 +6,19 @@ import torch.utils.model_zoo as model_zoo
 
 class ClassificationNetwork(nn.Module):
 
-    def __init__(self):
+    def __init__(self, final_categories):
         super(ClassificationNetwork, self).__init__()
 
-        ############################################################################
-        #                             YOUR CODE
-        #                      														#
-        ############################################################################
         self.Res_conv = models.resnet18(pretrained = True)
         for param in self.Res_conv.parameters():
             param.requires_grad = False
-        for param in self.Res_conv.layer4.parameters():
-            param.requires_grad = True
+        #for param in self.Res_conv.layer4.parameters():
+        #    param.requires_grad = True
 
         self.my_model = nn.Sequential(
-                        nn.Linear(1000, 512, bias=True),
-                        nn.Linear(512, 38, bias=True),
-                        )   
+                        nn.Linear(1000, 500, bias=True),
+                        nn.Linear(500, final_categories, bias=True),
+                        )
         for param in self.my_model.parameters():
             param.requires_grad = True
         
@@ -34,9 +30,7 @@ class ClassificationNetwork(nn.Module):
         Inputs:
         - x: PyTorch input Variable
         """
-        ############################################################################
-        #                             YOUR CODE                                    #
-        ############################################################################
+
         out = self.Res_conv(x)
         out = self.my_model(out)
         return out

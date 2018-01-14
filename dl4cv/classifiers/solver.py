@@ -40,57 +40,48 @@ class Solver(object):
         - num_epochs: total number of training epochs
         - log_nth: log training accuracy and loss every nth iteration
         """
-        optim = self.optim(filter(lambda p: p.requires_grad, model.parameters()), **self.optim_args)
+        
+        #optim = self.optim(filter(lambda p: p.requires_grad, model.parameters()), **self.optim_args)
+        optim = self.optim([p for p in model.parameters() if p.requires_grad], **self.optim_args)
         self._reset_histories()
         iter_per_epoch = len(train_loader)
         # filter(lambda p: p.requires_grad, model.parameters())
         use_gpu = torch.cuda.is_available()
 
+
         print 'START TRAIN.'
-        ############################################################################
-        # TODO:                                                                    #
-        # Write your own personal training method for our solver. In Each epoch    #
-        # iter_per_epoch shuffled training batches are processed. The loss for     #
-        # each batch is stored in self.train_loss_history. Every log_nth iteration #
-        # the loss is logged. After one epoch the training accuracy of the last    #
-        # mini batch is logged and stored in self.train_acc_history.               #
-        # We validate at the end of each epoch, log the result and store the       #
-        # accuracy of the entire validation set in self.val_acc_history.           #
-        #
-        # Your logging should like something like:                                 #
-        #   ...                                                                    #
-        #   [Iteration 700/4800] TRAIN loss: 1.452                                 #
-        #   [Iteration 800/4800] TRAIN loss: 1.409                                 #
-        #   [Iteration 900/4800] TRAIN loss: 1.374                                 #
-        #   [Epoch 1/5] TRAIN acc/loss: 0.560/1.374                                #
-        #   [Epoch 1/5] VAL   acc/loss: 0.539/1.310                                #
-        #   ...                                                                    #
-        ############################################################################
+
         for epoch in range(num_epochs):
             total_train  = 0
             correct_train = 0
             
             #Training Loop
-            
             for i, data in enumerate(train_loader, 0):
+                
                 # get the inputs, wrap them in Variable
                 input, label = data
                 if use_gpu:
                     input = input.cuda()
                     label = label.cuda()
                     model = model.cuda()
-                
                 inputs, labels = Variable(input), Variable(label)
                 
                 # zero the parameter gradients
                 optim.zero_grad()
 
-                # forward + backward + optimize
+                # forward pass
                 outputs = model(inputs)
+
+                # calculation of loss
                 loss = self.loss_func(outputs, labels)
+
+                # backpropagation
                 loss.backward()
+
+                # single gradient step
                 optim.step()
                 
+                # calculating correct predictions
                 _,predicted_train = torch.max(outputs.data, 1)
                 total_train += labels.size(0)
                 correct_train += (predicted_train == label).sum()
@@ -106,31 +97,37 @@ class Solver(object):
                     print ('[Epoch %d/%d] Train acc/loss: %0.4f/%0.4f') % \
                           (epoch, num_epochs, self.train_acc_history[-1], self.train_loss_history[-1])
 
+
             #Validation Loop
-            
             correct_val = 0
             val_size = 0
-            loss_val = 0
+            #loss_val = 0
+
             for i, data_val in enumerate(val_loader, 0):
+                
                 # get the inputs, wrap them in Variable
                 input_val, label_val = data_val
-                
                 if use_gpu:
-                    input_val = input_val.cuda()
-                    label_val = label_val.cuda()
-                
-                inputs_val, labels_val = Variable(input_val), Variable(label_val)
+                    inputs_val = Variable(input_val, volatile = "True").cuda()
+                    labels_val = Variable(label_val, volatile = "True").cuda()
+                inputs_val = Variable(input_val, volatile = "True")
+                labels_val = Variable(label_val, volatile = "True")
+
+                # forward pass
                 output_val = model(inputs_val)
+
+                # calculating loss
                 loss_val = self.loss_func(output_val, labels_val)
+
+                # calculating correct predictions
                 _,predicted_val = torch.max(output_val.data, 1)
                 val_size += label_val.size(0)
                 correct_val += (predicted_val == label_val).sum()
+
+            # storing values
             self.val_acc_history.append(correct_val/float(val_size))
             print ('[Epoch %d/%d] Val acc/loss: %0.4f/%0.4f') % \
                   (epoch, num_epochs, self.val_acc_history[-1], loss_val.data[0])
 
 
-        ############################################################################
-        #                             END OF YOUR CODE                             #
-        ############################################################################
-        print 'FINISH.'
+        print 'FINISH TRAIN.'
