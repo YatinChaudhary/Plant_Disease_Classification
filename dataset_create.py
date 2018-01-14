@@ -56,80 +56,9 @@ def create_dataset(root, f_name):
 	plant_names_list = list(set(plant_names))
 	disease_names_list = list(set(disease_names))
 
-	for plant_name in plant_names_list:
-		if not os.path.exists(os.path.join(train_plant_type_set_path, plant_name)):
-			os.makedirs(os.path.join(train_plant_type_set_path, plant_name))
-			os.makedirs(os.path.join(val_plant_type_set_path, plant_name))
-			os.makedirs(os.path.join(test_plant_type_set_path, plant_name))
-
-	for disease_name in disease_names_list:
-		if not os.path.exists(os.path.join(train_disease_type_set_path, disease_name)):
-			os.makedirs(os.path.join(train_disease_type_set_path, disease_name))
-			os.makedirs(os.path.join(val_disease_type_set_path, disease_name))
-			os.makedirs(os.path.join(test_disease_type_set_path, disease_name))
-
 	print len(plant_names_list), len(disease_names_list)
 	write_list_in_file(plant_type_txt, plant_names_list)
 	write_list_in_file(disease_type_txt, disease_names_list)
-
-	for dir in dirs_rootdir:
-		plant_name, disease_name = dir.split("___")
-		print plant_name, disease_name
-
-		current_dir = os.path.join(rootdir, dir)
-		files_current_dir = os.walk(current_dir).next()[2]
-		files_count_current_dir = len(files_current_dir)
-		
-		val_set_files_count = files_count_current_dir // 5
-		test_set_files_count = files_count_current_dir // 5
-		train_set_files_count = files_count_current_dir - (val_set_files_count + test_set_files_count)
-		
-		index_array = np.arange(files_count_current_dir)
-		np.random.shuffle(index_array)
-
-		print files_count_current_dir, val_set_files_count, test_set_files_count, train_set_files_count, len(index_array)
-
-		try:
-			val_set_file_indices = index_array[0: val_set_files_count]
-			test_set_file_indices = index_array[val_set_files_count: val_set_files_count + test_set_files_count]
-			train_set_file_indices = index_array[val_set_files_count + test_set_files_count :]
-			#print "chk-1"
-			val_plant_set_path = os.path.join(val_plant_type_set_path, plant_name)
-			val_disease_set_path = os.path.join(val_disease_type_set_path, disease_name)
-			for index in val_set_file_indices:
-				file_path = os.path.join(current_dir, files_current_dir[index])
-				if not os.path.exists(os.path.join(val_plant_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, val_plant_set_path)
-				if not os.path.exists(os.path.join(val_disease_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, val_disease_set_path)
-				#shutil.copyfile(file_path, os.path.join(val_plant_set_path, files_current_dir[index]))
-				#shutil.copyfile(file_path, os.path.join(val_disease_set_path, files_current_dir[index]))
-			#print "chk-2"
-			test_plant_set_path = os.path.join(test_plant_type_set_path, plant_name)
-			test_disease_set_path = os.path.join(test_disease_type_set_path, disease_name)
-			for index in test_set_file_indices:
-				file_path = os.path.join(current_dir, files_current_dir[index])
-				if not os.path.exists(os.path.join(test_plant_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, test_plant_set_path)
-				if not os.path.exists(os.path.join(test_disease_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, test_disease_set_path)
-				#shutil.copyfile(file_path, os.path.join(test_plant_set_path, files_current_dir[index]))
-				#shutil.copyfile(file_path, os.path.join(test_disease_set_path, files_current_dir[index]))
-			#print "chk-3"
-			train_plant_set_path = os.path.join(train_plant_type_set_path, plant_name)
-			train_disease_set_path = os.path.join(train_disease_type_set_path, disease_name)
-			for index in train_set_file_indices:
-				file_path = os.path.join(current_dir, files_current_dir[index])
-				if not os.path.exists(os.path.join(train_plant_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, train_plant_set_path)
-				if not os.path.exists(os.path.join(train_disease_set_path, files_current_dir[index])):
-					shutil.copy2(file_path, train_disease_set_path)
-				#shutil.copyfile(file_path, os.path.join(train_plant_set_path, files_current_dir[index]))
-				#shutil.copyfile(file_path, os.path.join(train_disease_set_path, files_current_dir[index]))
-			#print "chk-4"
-		except Exception:
-			print "error in " + plant_name
-
 
 	plant_type_dict = {}
 	disease_type_dict = {}
@@ -155,34 +84,97 @@ def create_dataset(root, f_name):
 	pickle.dump(disease_type_dict, pickle_out)
 	pickle_out.close()
 
-	"""
-	for i in range(0,38):
-		folder_name = "c_" + str(i)
-		curr_root = os.path.join(path_source, folder_name)
+	plant_counter_val = 0
+	plant_counter_test = 0
+	plant_counter_train = 0
+	disease_counter_val = 0
+	disease_counter_test = 0
+	disease_counter_train = 0
 
-		for filename in glob.iglob(os.path.join(curr_root, r'*.jpg')):
-			title, ext = os.path.splitext(os.path.basename(filename))
-			new_filename = str(i)+"_"+str(image_index)
-			src_file = os.path.join(curr_root,new_filename + ext)			
-			os.rename(filename, src_file)
+	for dir in dirs_rootdir:
+		plant_name, disease_name = dir.split("___")
+		print plant_name, disease_name
+		plant_name_id = plant_type_dict[plant_name]
+		disease_name_id = disease_type_dict[disease_name]
 
-			shutil.copy2(src_file,path_destination)
-			image_index +=1
-			with open(root_txt, "a") as f:
-				f.write(new_filename+"\n")
+		current_dir = os.path.join(rootdir, dir)
+		files_current_dir = os.walk(current_dir).next()[2]
+		files_count_current_dir = len(files_current_dir)
+		
+		val_set_files_count = files_count_current_dir // 5
+		test_set_files_count = files_count_current_dir // 5
+		train_set_files_count = files_count_current_dir - (val_set_files_count + test_set_files_count)
+		
+		index_array = np.arange(files_count_current_dir)
+		np.random.shuffle(index_array)
 
-		for filename in glob.iglob(os.path.join(curr_root, r'*.JPG')):
-			title, ext = os.path.splitext(os.path.basename(filename))
-			new_filename = str(i)+"_"+str(image_index)
-			ext = ".jpg"
-			src_file = os.path.join(curr_root,new_filename + ext)			
-			os.rename(filename, src_file)
+		print files_count_current_dir, val_set_files_count, test_set_files_count, train_set_files_count, len(index_array)
 
-			shutil.copy2(src_file,path_destination)
-			image_index +=1
-			with open(root_txt, "a") as f:
-				f.write(new_filename+"\n")
-	"""
+		try:
+			val_set_file_indices = index_array[0: val_set_files_count]
+			test_set_file_indices = index_array[val_set_files_count: val_set_files_count + test_set_files_count]
+			train_set_file_indices = index_array[val_set_files_count + test_set_files_count :]
+			#print "chk-1"
+			with open(os.path.join(plant_type_set_path, val_set + ".txt"), "a") as f:
+				for index in val_set_file_indices:
+					file_name_plant = str(plant_name_id) + '_' + str(plant_counter_val)
+					file_path = os.path.join(current_dir, files_current_dir[index])
+					#if not os.path.exists(os.path.join(val_plant_set_path, files_current_dir[index])):
+					shutil.copy2(file_path, os.path.join(val_plant_type_set_path, file_name_plant))
+					f.write(file_name_plant + "\n")
+					plant_counter_val += 1
+
+			#print "chk-2"
+			with open(os.path.join(disease_type_set_path, val_set + ".txt"), "a") as f:
+				#print "chk-2-1"
+				for index in val_set_file_indices:
+					file_name_disease = str(disease_name_id) + '_' + str(disease_counter_val)
+					file_path = os.path.join(current_dir, files_current_dir[index])
+					#if not os.path.exists(os.path.join(val_disease_set_path, files_current_dir[index])):
+					shutil.copy2(file_path, os.path.join(val_disease_type_set_path, file_name_disease))
+					f.write(file_name_disease + "\n")
+					disease_counter_val += 1
+
+			#print "chk-3"
+			with open(os.path.join(plant_type_set_path, test_set + ".txt"), "a") as f:
+				for index in test_set_file_indices:
+					file_name_plant = str(plant_name_id) + '_' + str(plant_counter_test)
+					file_path = os.path.join(current_dir, files_current_dir[index])
+					#if not os.path.exists(os.path.join(val_plant_set_path, files_current_dir[index])):
+					shutil.copy2(file_path, os.path.join(test_plant_type_set_path, file_name_plant))
+					f.write(file_name_plant + "\n")
+					plant_counter_test += 1
+
+			with open(os.path.join(disease_type_set_path, test_set + ".txt"), "a") as f:
+				for index in test_set_file_indices:
+					file_name_disease = str(disease_name_id) + '_' + str(disease_counter_test)
+					file_path = os.path.join(current_dir, files_current_dir[index])
+					#if not os.path.exists(os.path.join(val_disease_set_path, files_current_dir[index])):
+					shutil.copy2(file_path, os.path.join(test_disease_type_set_path, file_name_disease))
+					f.write(file_name_disease + "\n")
+					disease_counter_test += 1
+
+			with open(os.path.join(plant_type_set_path, train_set + ".txt"), "a") as f:
+				for index in train_set_file_indices:
+					file_name_plant = str(plant_name_id) + '_' + str(plant_counter_train)
+					file_path = os.path.join(current_dir, files_current_dir[index])
+					#if not os.path.exists(os.path.join(val_plant_set_path, files_current_dir[index])):
+					shutil.copy2(file_path, os.path.join(train_plant_type_set_path, file_name_plant))
+					f.write(file_name_plant + "\n")
+					plant_counter_train += 1
+
+			with open(os.path.join(disease_type_set_path, train_set + ".txt"), "a") as f:
+				for index in train_set_file_indices:
+					file_name_disease = str(disease_name_id) + '_' + str(disease_counter_train)
+					file_path = os.path.join(current_dir, files_current_dir[index])
+					#if not os.path.exists(os.path.join(val_disease_set_path, files_current_dir[index])):
+					shutil.copy2(file_path, os.path.join(train_disease_type_set_path, file_name_disease))
+					f.write(file_name_plant + "\n")
+					disease_counter_train += 1
+					
+		except Exception:
+			print "error in " + plant_name
+
 
 def write_list_in_file(file_path, list):
 	with open(file_path, "w") as f:
