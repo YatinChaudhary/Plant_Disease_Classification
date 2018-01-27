@@ -4,10 +4,12 @@ import numpy as np
 import cPickle as pickle
 
 root = "../PlantVillage_Dataset/raw"
-#target = "../partitioned_dataset"
+
+### FOR FULL DATASET
+target = "../partitioned_dataset"
 
 ### FOR DEVELOPMENT DATASET
-target = "../partitioned_dataset_dev"
+#target = "../partitioned_dataset_dev"
 
 if not os.path.exists(target):
 	os.makedirs(target)
@@ -104,14 +106,15 @@ def create_dataset(root, f_name):
 		files_current_dir = os.walk(current_dir).next()[2]
 		files_count_current_dir = len(files_current_dir)
 		
-		#val_set_files_count = files_count_current_dir // 5
-		#test_set_files_count = files_count_current_dir // 5
-		#train_set_files_count = files_count_current_dir - (val_set_files_count + test_set_files_count)
+		### FOR FULL DATASET
+		val_set_files_count = files_count_current_dir // 5
+		test_set_files_count = files_count_current_dir // 5
+		train_set_files_count = files_count_current_dir - (val_set_files_count + test_set_files_count)
 
 		### FOR DEVELOPMENT DATASET
-		val_set_files_count = files_count_current_dir // 20
-		test_set_files_count = files_count_current_dir // 80
-		train_set_files_count = files_count_current_dir - (val_set_files_count + test_set_files_count)
+		#val_set_files_count = files_count_current_dir // 20
+		#test_set_files_count = files_count_current_dir // 80
+		#train_set_files_count = files_count_current_dir - (val_set_files_count + test_set_files_count)
 		
 		index_array = np.arange(files_count_current_dir)
 		np.random.shuffle(index_array)
@@ -122,7 +125,7 @@ def create_dataset(root, f_name):
 			val_set_file_indices = index_array[0: val_set_files_count]
 			test_set_file_indices = index_array[val_set_files_count: val_set_files_count + test_set_files_count]
 			train_set_file_indices = index_array[val_set_files_count + test_set_files_count :]
-			#print "chk-1"
+
 			with open(os.path.join(plant_type_set_path, val_set + ".txt"), "a") as f:
 				for index in val_set_file_indices:
 					file_name_plant = str(plant_name_id) + '_' + str(plant_counter_val)
@@ -131,10 +134,8 @@ def create_dataset(root, f_name):
 					shutil.copy2(file_path, os.path.join(val_plant_type_set_path, file_name_plant + '.jpg'))
 					f.write(file_name_plant + "\n")
 					plant_counter_val += 1
-
-			#print "chk-2"
+			
 			with open(os.path.join(disease_type_set_path, val_set + ".txt"), "a") as f:
-				#print "chk-2-1"
 				for index in val_set_file_indices:
 					file_name_disease = str(disease_name_id) + '_' + str(disease_counter_val)
 					file_path = os.path.join(current_dir, files_current_dir[index])
@@ -142,8 +143,7 @@ def create_dataset(root, f_name):
 					shutil.copy2(file_path, os.path.join(val_disease_type_set_path, file_name_disease + '.jpg'))
 					f.write(file_name_disease + "\n")
 					disease_counter_val += 1
-
-			#print "chk-3"
+			
 			with open(os.path.join(plant_type_set_path, test_set + ".txt"), "a") as f:
 				for index in test_set_file_indices:
 					file_name_plant = str(plant_name_id) + '_' + str(plant_counter_test)
@@ -152,7 +152,7 @@ def create_dataset(root, f_name):
 					shutil.copy2(file_path, os.path.join(test_plant_type_set_path, file_name_plant + '.jpg'))
 					f.write(file_name_plant + "\n")
 					plant_counter_test += 1
-
+			
 			with open(os.path.join(disease_type_set_path, test_set + ".txt"), "a") as f:
 				for index in test_set_file_indices:
 					file_name_disease = str(disease_name_id) + '_' + str(disease_counter_test)
@@ -163,7 +163,7 @@ def create_dataset(root, f_name):
 					disease_counter_test += 1
 			
 			### COMMENT BELOW TWO FOR LOOPS FOR DEVELOPMENT DATASET
-			"""
+			
 			with open(os.path.join(plant_type_set_path, train_set + ".txt"), "a") as f:
 				for index in train_set_file_indices:
 					file_name_plant = str(plant_name_id) + '_' + str(plant_counter_train)
@@ -172,7 +172,7 @@ def create_dataset(root, f_name):
 					shutil.copy2(file_path, os.path.join(train_plant_type_set_path, file_name_plant + '.jpg'))
 					f.write(file_name_plant + "\n")
 					plant_counter_train += 1
-
+			
 			with open(os.path.join(disease_type_set_path, train_set + ".txt"), "a") as f:
 				for index in train_set_file_indices:
 					file_name_disease = str(disease_name_id) + '_' + str(disease_counter_train)
@@ -181,7 +181,7 @@ def create_dataset(root, f_name):
 					shutil.copy2(file_path, os.path.join(train_disease_type_set_path, file_name_disease + '.jpg'))
 					f.write(file_name_plant + "\n")
 					disease_counter_train += 1
-			"""
+			
 		except Exception:
 			print("error in ", plant_name)
 
