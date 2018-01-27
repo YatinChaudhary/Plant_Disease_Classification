@@ -28,6 +28,7 @@ class Solver(object):
         self.train_loss_history = []
         self.train_acc_history = []
         self.val_acc_history = []
+        self.val_loss_history = []
 
     def train(self, model, train_loader, val_loader, num_epochs=10, log_nth=0):
         """
@@ -49,11 +50,17 @@ class Solver(object):
         use_gpu = torch.cuda.is_available()
 
 
-        print 'START TRAIN.'
+        print('START TRAIN.')
 
         for epoch in range(num_epochs):
             total_train  = 0
             correct_train = 0
+
+            train_loss = 0
+            val_loss = 0
+
+            if use_gpu:
+                model = model.cuda()
             
             #Training Loop
             for i, data in enumerate(train_loader, 0):
@@ -63,7 +70,6 @@ class Solver(object):
                 if use_gpu:
                     input = input.cuda()
                     label = label.cuda()
-                    model = model.cuda()
                 inputs, labels = Variable(input), Variable(label)
                 
                 # zero the parameter gradients
@@ -86,16 +92,18 @@ class Solver(object):
                 total_train += labels.size(0)
                 correct_train += (predicted_train == label).sum()
 
+                train_loss += loss.data[0]
                 # Storing values
-                self.train_loss_history.append(loss.data[0])
-                if (i+1) % log_nth == 0:
-                    print ('[Iteration %d/%d] Train loss: %0.4f') % \
-                          (i, iter_per_epoch, self.train_loss_history[-1])
+                #self.train_loss_history.append(loss.data[0])
+                #if (i+1) % log_nth == 0:
+                #    print('[Iteration:', i, '/', iter_per_epoch, ']Train loss:', \
+                #            self.train_loss_history[-1])
 
-                if (i+1) % iter_per_epoch == 0:
-                    self.train_acc_history.append(correct_train/float(total_train))
-                    print ('[Epoch %d/%d] Train acc/loss: %0.4f/%0.4f') % \
-                          (epoch, num_epochs, self.train_acc_history[-1], self.train_loss_history[-1])
+                #if (i+1) % iter_per_epoch == 0:
+            self.train_acc_history.append(correct_train/float(total_train))
+            self.train_loss_history.append(train_loss / float(len(train_loader)))
+            print('[Epoch:', epoch, '/', num_epochs, '] Train acc/loss:', \
+                    self.train_acc_history[-1], '/', self.train_loss_history[-1])
 
 
             #Validation Loop
@@ -108,10 +116,9 @@ class Solver(object):
                 # get the inputs, wrap them in Variable
                 input_val, label_val = data_val
                 if use_gpu:
-                    inputs_val = Variable(input_val, volatile = "True").cuda()
-                    labels_val = Variable(label_val, volatile = "True").cuda()
-                inputs_val = Variable(input_val, volatile = "True")
-                labels_val = Variable(label_val, volatile = "True")
+                    input_val = input_val.cuda()
+                    label_val = label_val.cuda()
+                inputs_val, labels_val = Variable(input_val), Variable(label_val)
 
                 # forward pass
                 output_val = model(inputs_val)
@@ -124,10 +131,13 @@ class Solver(object):
                 val_size += label_val.size(0)
                 correct_val += (predicted_val == label_val).sum()
 
+                val_loss += loss_val.data[0]
+
             # storing values
             self.val_acc_history.append(correct_val/float(val_size))
-            print ('[Epoch %d/%d] Val acc/loss: %0.4f/%0.4f') % \
-                  (epoch, num_epochs, self.val_acc_history[-1], loss_val.data[0])
+            self.val_loss_history.append(val_loss / float(len(val_loader)))
+            print('[Epoch:', epoch, '/', num_epochs, '] Val acc/loss:', \
+                    self.val_acc_history[-1], '/', self.val_loss_history[-1])
 
-
-        print 'FINISH TRAIN.'
+        print('FINISH TRAIN.')
+        return self.train_loss_history, self.val_loss_history

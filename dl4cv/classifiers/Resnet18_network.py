@@ -16,8 +16,13 @@ class ClassificationNetwork(nn.Module):
         #    param.requires_grad = True
 
         self.my_model = nn.Sequential(
+                        nn.BatchNorm1d(1000),
+                        nn.ReLU(inplace=False),
                         nn.Linear(1000, 500, bias=True),
+                        nn.BatchNorm1d(500),
+                        nn.ReLU(inplace=False),
                         nn.Linear(500, final_categories, bias=True),
+                        nn.LogSoftmax()
                         )
         for param in self.my_model.parameters():
             param.requires_grad = True
@@ -43,5 +48,5 @@ class ClassificationNetwork(nn.Module):
         Inputs:
         - path: path string
         """
-        print 'Saving model... %s' % path
+        print('Saving model... %s',path)
         torch.save(self, path)

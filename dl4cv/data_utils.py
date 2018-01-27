@@ -1,4 +1,4 @@
-import cPickle as pickle
+import _pickle as pickle
 import numpy as np
 import os
 from scipy.misc import imread
@@ -29,7 +29,7 @@ class ClassificationData(data.Dataset):
 
         self.transform = transforms.Compose([
             transforms.CenterCrop(256),
-            transforms.Scale(240),
+            transforms.Resize(224),
             transforms.ToTensor(),
         ])
 

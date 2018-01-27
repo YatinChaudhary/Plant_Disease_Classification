@@ -59,7 +59,7 @@ def create_dataset(root, f_name):
 	plant_names_list = list(set(plant_names))
 	disease_names_list = list(set(disease_names))
 
-	print len(plant_names_list), len(disease_names_list)
+	print(len(plant_names_list), len(disease_names_list))
 	write_list_in_file(plant_type_txt, plant_names_list)
 	write_list_in_file(disease_type_txt, disease_names_list)
 
@@ -76,7 +76,7 @@ def create_dataset(root, f_name):
 			key, value = line.strip().split("=")
 			disease_type_dict[key] = value
 
-	print plant_type_dict, disease_type_dict
+	print(plant_type_dict, disease_type_dict)
 	pickle_path = os.path.join(target_dir, "plant_type_dict.pickle")
 	pickle_out = open(pickle_path, "wb")
 	pickle.dump(plant_type_dict, pickle_out)
@@ -96,7 +96,7 @@ def create_dataset(root, f_name):
 
 	for dir in dirs_rootdir:
 		plant_name, disease_name = dir.split("___")
-		print plant_name, disease_name
+		print(plant_name, disease_name)
 		plant_name_id = plant_type_dict[plant_name]
 		disease_name_id = disease_type_dict[disease_name]
 
@@ -116,7 +116,7 @@ def create_dataset(root, f_name):
 		index_array = np.arange(files_count_current_dir)
 		np.random.shuffle(index_array)
 
-		print files_count_current_dir, val_set_files_count, test_set_files_count, train_set_files_count, len(index_array)
+		print(files_count_current_dir, val_set_files_count, test_set_files_count, train_set_files_count, len(index_array))
 
 		try:
 			val_set_file_indices = index_array[0: val_set_files_count]
@@ -183,7 +183,7 @@ def create_dataset(root, f_name):
 					disease_counter_train += 1
 			"""
 		except Exception:
-			print "error in " + plant_name
+			print("error in ", plant_name)
 
 
 def write_list_in_file(file_path, list):

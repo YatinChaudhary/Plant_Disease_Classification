@@ -1,0 +1,7 @@
+non linearity (ReLU) between pretrained model output and FC layer after it
+batch normalization between pretrained model output and FC layer after it
+Train last conv layer of pretrained network
+use torch.optim.lr_scheduler for leraning rate decay
+
+don't crop from between but with smaller of the two sides
+don't train full network but smaller part of it 
